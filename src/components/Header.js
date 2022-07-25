@@ -1,16 +1,38 @@
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 import { auth, provider } from "../firebase";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  selectUserName,
+  selectUserPhoto,
+  setUserLoginDetails,
+} from "../features/user/userSlice";
 
 const Header = (props) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate(); 
+  const userName = useSelector(selectUserName);
+  const userPhoto = useSelector(selectUserPhoto);
+
   const handleAuth = () => {
     auth
-      .siginInWithPoup(provider)
+      .signInWithPopup(provider)
       .then((result) => {
-        console.log(result);
+        setUser(result.user);
       })
       .catch((error) => {
         alert(error.message);
       });
+  };
+
+  const setUser = (user) => {
+    dispatch(
+      setUserLoginDetails({
+        name: user.displayName,
+        email: user.email,
+        photo: user.photoURL,
+      })
+    );
   };
 
   return (
@@ -18,34 +40,41 @@ const Header = (props) => {
       <Logo>
         <img src="/images/logo.svg" alt="Disney" />
       </Logo>
-      <NavMenu>
-        <a href="/home">
-          <img src="/images/home-icon.svg" alt="HOME" />
-          <span>HOME</span>
-        </a>
-        <a href="/">
-          <img src="/images/search-icon.svg" alt="WATCH" />
-          <span>SEARCH</span>
-        </a>
-        <a href="/">
-          <img src="/images/original-icon.svg" alt="ORIGINAL" />
-          <span>ORIGINAL</span>
-        </a>
-        <a href="/">
-          <img src="/images/movie-icon.svg" alt="MOVIES" />
-          <span>MOVIES</span>
-        </a>
-        <a href="/">
-          <img src="/images/series-icon.svg" alt="SERIES" />
-          <span>SERIES</span>
-        </a>
-      </NavMenu>
-      <Login onClick={handleAuth}>Login</Login>
+
+      {!userName ? (
+        <Login onClick={handleAuth}>Login</Login>
+      ) : (
+        <>
+          <NavMenu>
+            <a href="/home">
+              <img src="/images/home-icon.svg" alt="HOME" />
+              <span>HOME</span>
+            </a>
+            <a href=" ">
+              <img src="/images/search-icon.svg" alt="WATCH" />
+              <span>SEARCH</span>
+            </a>
+            <a href=" ">
+              <img src="/images/original-icon.svg" alt="ORIGINAL" />
+              <span>ORIGINAL</span>
+            </a>
+            <a href=" ">
+              <img src="/images/movie-icon.svg" alt="MOVIES" />
+              <span>MOVIES</span>
+            </a>
+            <a href=" ">
+              <img src="/images/series-icon.svg" alt="SERIES" />
+              <span>SERIES</span>
+            </a>
+          </NavMenu>
+          <UserImg src={userPhoto} alt={userName} />
+        </>
+      )}
     </Nav>
   );
 };
 
-const Nav = styled.nav`NP
+const Nav = styled.nav`
   position: fixed;
   top: 0;
   left: 0;
@@ -154,6 +183,10 @@ const Login = styled.div`
     border-color: transparent;
     cursor: pointer;
   }
+`;
+
+const UserImg = styled.img`
+  height: 100%;
 `;
 
 export default Header;
